@@ -14,7 +14,7 @@ def render():
     st.header("Расчеты")
 
     if 'project_data' not in st.session_state:
-        st.warning("Пожалуйста, сначала введите данные на странице 'Ввод данных'")
+        st.warning("Пожалуйста, сначала введите данные на странице 'Ввод данных' и сохраните их.")
         return
 
     data = st.session_state['project_data']
@@ -29,9 +29,12 @@ def render():
     
     # Расчет переменных операционных затрат
     var_costs = pd.DataFrame(data['var_costs'])
+    if 'Количество лет' in var_costs.columns:
+        var_costs['Количество лет'] = pd.to_numeric(var_costs['Количество лет'], errors='coerce')
+    else:
+        var_costs['Количество лет'] = pd.to_numeric(var_costs['Количество месяцев'], errors='coerce')
     var_costs['Количество'] = pd.to_numeric(var_costs['Количество'], errors='coerce')
     var_costs['Ставка'] = pd.to_numeric(var_costs['Ставка'], errors='coerce')
-    var_costs['Количество лет'] = pd.to_numeric(var_costs['Количество лет'], errors='coerce')
     var_costs['Процент индексирования'] = pd.to_numeric(var_costs['Процент индексирования'], errors='coerce')
     
     coefficients = {k: float(v) for k, v in data['coefficients'].items()}
