@@ -12,17 +12,17 @@ def calculate_npv(cash_flows, discount_rate):
     npv = sum(cf / (1 + discount_rate)**i for i, cf in enumerate(cash_flows))
     return npv
 
-def calculate_cf(revenue, opex, capex, working_capital):
+def calculate_cf(revenue, total_opex, capex, working_capital):
     """
     Расчет Совокупного Денежного Потока (CF).
     
     :param revenue: выручка
-    :param opex: операционные затраты
+    :param total_opex: общие операционные затраты
     :param capex: капитальные затраты
     :param working_capital: изменение чистого оборотного капитала
     :return: значение CF
     """
-    cf = revenue - opex - capex - working_capital
+    cf = revenue - total_opex - capex - working_capital
     return cf
 
 def create_fem(data, years):
@@ -37,7 +37,7 @@ def create_fem(data, years):
     
     # Заполнение данными
     fem['Выручка'] = [data['revenue']] * years
-    fem['Операционные затраты'] = [data['opex']] * years
+    fem['Операционные затраты'] = [data['total_opex']] * years
     fem['Капитальные затраты'] = [data['capex']] * years
     fem['Чистый оборотный капитал'] = [data['working_capital']] * years
     
@@ -54,6 +54,36 @@ def create_fem(data, years):
     
     return fem
 
+def calculate_irr(cash_flows):
+    """
+    Расчет Внутренней Нормы Доходности (IRR).
+    
+    :param cash_flows: список денежных потоков
+    :return: значение IRR
+    """
+    return np.irr(cash_flows)
+
+def calculate_payback_period(cash_flows):
+    """
+    Расчет Срока Окупаемости (PP).
+    
+    :param cash_flows: список денежных потоков
+    :return: значение PP
+    """
+    cumulative_cash_flow = np.cumsum(cash_flows)
+    payback_period = np.argmax(cumulative_cash_flow >= 0)
+    return payback_period if payback_period > 0 else None
+
+def calculate_discounted_payback_period(cash_flows, discount_rate):
+    """
+    Расчет Дисконтированного Срока Окупаемости (DPP).
+    
+    :param cash_flows: список денежных потоков
+    :param discount_rate: ставка дисконтирования
+    :return: значение DPP
+    """
+    discounted_cash_flows = [cf / (1 + discount_rate)**i for i, cf in enumerate(cash_flows)]
+    return calculate_payback_period(discounted_cash_flows)
+
 # TODO: Реализовать функцию для сравнения базового и проектного вариантов
-# TODO: Добавить расчет дополнительных финансовых показателей (IRR, PP, DPP)
 # TODO: Реализовать анализ чувствительности

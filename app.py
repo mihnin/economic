@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from modules import data_input, calculations, prediction, visualization
+from modules import data_input, calculations, visualization
 
 def main():
     # Инициализация состояния для языка
@@ -15,7 +15,6 @@ def main():
             'lang_selector': "Выберите язык",
             'input_tab': "Ввод данных",
             'calc_tab': "Расчет эффекта",
-            'predict_tab': "Прогнозирование",
             'input_method': "Выберите метод ввода данных:",
             'manual_input': "Ручной ввод",
             'file_upload': "Загрузка файла",
@@ -24,22 +23,14 @@ def main():
             'fem_title': "Финансово-экономическая модель:",
             'npv_result': "NPV проекта:",
             'input_warning': "Пожалуйста, введите данные на вкладке 'Ввод данных'",
-            'predict_info': "Для демонстрации функционала прогнозирования необходимы исторические данные.",
-            'predict_steps': [
-                "В реальном приложении здесь будет реализовано:",
-                "1. Загрузка исторических данных",
-                "2. Обучение моделей (линейная регрессия и дерево решений)",
-                "3. Прогнозирование на основе введенных данных",
-                "4. Визуализация результатов прогнозирования"
-            ],
-            'predictor_ready': "Класс EconomicEffectPredictor создан и готов к использованию"
+            'employee_data': "Данные о сотрудниках:",
+            'total_opex': "Общие операционные затраты:"
         },
         'en': {
             'title': "Calculation of Economic Effect of Investment IT Projects",
             'lang_selector': "Select language",
             'input_tab': "Data Input",
             'calc_tab': "Effect Calculation",
-            'predict_tab': "Prediction",
             'input_method': "Choose data input method:",
             'manual_input': "Manual input",
             'file_upload': "File upload",
@@ -48,15 +39,8 @@ def main():
             'fem_title': "Financial and Economic Model:",
             'npv_result': "Project NPV:",
             'input_warning': "Please enter data in the 'Data Input' tab",
-            'predict_info': "Historical data is required to demonstrate the prediction functionality.",
-            'predict_steps': [
-                "In the real application, the following will be implemented here:",
-                "1. Loading historical data",
-                "2. Training models (linear regression and decision trees)",
-                "3. Prediction based on input data",
-                "4. Visualization of prediction results"
-            ],
-            'predictor_ready': "EconomicEffectPredictor class is created and ready to use"
+            'employee_data': "Employee data:",
+            'total_opex': "Total operating expenses:"
         }
     }
 
@@ -74,7 +58,7 @@ def main():
     st.title(t['title'])
 
     # Вкладки для разных функций приложения
-    tab1, tab2, tab3 = st.tabs([t['input_tab'], t['calc_tab'], t['predict_tab']])
+    tab1, tab2 = st.tabs([t['input_tab'], t['calc_tab']])
 
     with tab1:
         st.header(t['input_tab'])
@@ -85,9 +69,17 @@ def main():
         else:
             input_data = data_input.file_upload(current_lang)
         
-        if input_data and st.button(t['save_data']):
+        if input_data:
             st.session_state.input_data = input_data
             st.success(t['data_saved'])
+            
+            # Отображение данных о сотрудниках
+            st.subheader(t['employee_data'])
+            st.dataframe(st.session_state.employee_data)
+            
+            # Отображение общих операционных затрат
+            st.subheader(t['total_opex'])
+            st.write(f"{input_data['total_opex']:.2f}")
 
     with tab2:
         st.header(t['calc_tab'])
@@ -104,19 +96,6 @@ def main():
             
             visualization.plot_cash_flows(fem, current_lang)
             visualization.plot_npv(fem, current_lang)
-        else:
-            st.warning(t['input_warning'])
-
-    with tab3:
-        st.header(t['predict_tab'])
-        if 'input_data' in st.session_state:
-            st.write(t['predict_info'])
-            for step in t['predict_steps']:
-                st.write(step)
-            
-            # Пример использования класса EconomicEffectPredictor
-            predictor = prediction.EconomicEffectPredictor()
-            st.write(t['predictor_ready'])
         else:
             st.warning(t['input_warning'])
 
