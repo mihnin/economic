@@ -70,21 +70,27 @@ def render():
     st.dataframe(df)
     
     st.subheader("Итоговые показатели")
-    st.write(f"NPV: {npv:.2f}")
+    st.write(f"**NPV:** {npv:.2f}")
     
     # Проверка данных
     st.subheader("Проверка данных")
     
     # Проверка и вывод промежуточных результатов
-    st.write("Промежуточные результаты:")
-    st.write(f"Выручка: {df['Выручка']}")
-    st.write(f"Фиксированные операционные затраты: {df['Фиксированные операционные затраты']}")
-    st.write(f"Переменные операционные затраты: {df['Переменные операционные затраты']}")
-    st.write(f"Капитальные затраты: {df['Капитальные затраты']}")
-    st.write(f"CF: {df['CF']}")
-    st.write(f"Срок влияния: {impact_duration} лет")
-    st.write(f"Ставка дисконтирования: {discount_rate:.2%}")
-    st.write(f"Дисконтированный CF: {df['Дисконтированный CF']}")
+    st.write("**Промежуточные результаты:**")
+    st.write(f"**Выручка:**")
+    st.write(df['Выручка'])
+    st.write(f"**Фиксированные операционные затраты:**")
+    st.write(df['Фиксированные операционные затраты'])
+    st.write(f"**Переменные операционные затраты:**")
+    st.write(df['Переменные операционные затраты'])
+    st.write(f"**Капитальные затраты:**")
+    st.write(df['Капитальные затраты'])
+    st.write(f"**CF:**")
+    st.write(df['CF'])
+    st.write(f"**Срок влияния:** {impact_duration} лет")
+    st.write(f"**Ставка дисконтирования:** {discount_rate:.2%}")
+    st.write(f"**Дисконтированный CF:**")
+    st.write(df['Дисконтированный CF'])
     
     # Проверка на наличие отрицательных или нулевых значений
     if (df['Выручка'] <= 0).any() or (df['Фиксированные операционные затраты'] <= 0).any() or \
@@ -106,8 +112,8 @@ def render():
     npv_3_years = df['Дисконтированный CF'][:impact_duration].sum()
     npv_5_years = df['Дисконтированный CF'].sum()
 
-    st.write(f"NPV за {impact_duration} года (срок влияния): {npv_3_years:.2f}")
-    st.write(f"NPV за все 5 лет: {npv_5_years:.2f}")
+    st.write(f"**NPV за {impact_duration} года (срок влияния):** {npv_3_years:.2f}")
+    st.write(f"**NPV за все 5 лет:** {npv_5_years:.2f}")
 
     if np.isclose(npv, npv_3_years):
         st.success("NPV рассчитан корректно на основе срока влияния")
@@ -117,10 +123,10 @@ def render():
         st.error("NPV не соответствует ни расчету за срок влияния, ни расчету за все 5 лет")
     
     # Добавление подробного вывода расчета NPV по годам
-    st.write("Расчет NPV по годам:")
+    st.write("**Расчет NPV по годам:**")
     for year in range(1, impact_duration + 1):
-        st.write(f"Год {year}: {df['Дисконтированный CF'].iloc[year-1]:.2f}")
-    st.write(f"Сумма (NPV): {df['Дисконтированный CF'][:impact_duration].sum():.2f}")
+        st.write(f"**Год {year}:** {df['Дисконтированный CF'].iloc[year-1]:.2f}")
+    st.write(f"**Сумма (NPV):** {df['Дисконтированный CF'][:impact_duration].sum():.2f}")
     
     # Сохранение результатов расчетов
     st.session_state['calculation_results'] = {
