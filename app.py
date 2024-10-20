@@ -13,26 +13,6 @@ def main():
         utils.generate_test_excel(test_file)
         st.success(f"Создан тестовый файл: {test_file}")
 
-    # Добавляем функциональность сохранения и загрузки проекта
-    st.sidebar.header("Управление проектом")
-
-    # Сохранение проекта
-    if st.sidebar.button("Сохранить проект"):
-        if 'project_data' in st.session_state:
-            project_name = st.sidebar.text_input("Введите название проекта")
-            if project_name:
-                st.session_state['project_name'] = project_name
-                st.sidebar.success("Проект успешно сохранен")
-                st.sidebar.info("Проект сохранен. Введите название проекта для сохранения.")
-            else:
-                st.sidebar.warning("Пожалуйста, введите название проекта")
-        else:
-            st.sidebar.warning("Нет данных для сохранения")
-
-    # Загрузка проекта
-    if 'project_name' in st.session_state:
-        st.sidebar.info(f"Загруженный проект: {st.session_state['project_name']}")
-
     # Создаем боковую панель для навигации
     page = st.sidebar.selectbox(
         "Выберите раздел",

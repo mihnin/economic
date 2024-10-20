@@ -6,9 +6,10 @@ def calculate_cf(revenue, fixed_costs, var_costs):
     """Расчет денежного потока"""
     return revenue - fixed_costs - var_costs
 
-def calculate_npv(cash_flows, discount_rate):
-    """Расчет NPV"""
-    return np.sum(cash_flows / (1 + discount_rate) ** np.arange(len(cash_flows)))
+def calculate_npv(cash_flows, discount_rate, impact_duration):
+    """Расчет NPV с учетом срока влияния"""
+    n = min(len(cash_flows), impact_duration)  # Используем минимальное из двух значений
+    return np.sum(cash_flows[:n] / (1 + discount_rate) ** np.arange(n))
 
 def render():
     st.header("Расчеты")
@@ -58,10 +59,8 @@ def render():
     
     # Расчет дисконтированного CF и NPV
     discount_rate = float(data['discount_rate'])
-    df['Дисконтированный CF'] = df['CF'] / (1 + discount_rate) ** df['Год']
-    
     impact_duration = int(data['impact_duration'])
-    npv = calculate_npv(df['CF'][:impact_duration], discount_rate)
+    npv = calculate_npv(df['CF'], discount_rate, impact_duration)
     
     st.subheader("Результаты расчетов")
     st.dataframe(df)
@@ -79,7 +78,13 @@ def render():
     st.write(f"Переменные операционные затраты: {df['Переменные операционные затраты']}")
     st.write(f"Капитальные затраты: {df['Капитальные затраты']}")
     st.write(f"CF: {df['CF']}")
-
+    st.write(f"Срок влияния: {impact_duration} лет")
+    st.write(f"Ставка дисконтирования: {discount_rate:.2%}")
+    
+    # Расчет и вывод дисконтированного CF
+    df['Дисконтированный CF'] = df['CF'] / (1 + discount_rate) ** df['Год']
+    st.write(f"Дисконтированный CF: {df['Дисконтированный CF']}")
+    
     # Проверка на наличие отрицательных или нулевых значений
     if (df['Выручка'] <= 0).any() or (df['Фиксированные операционные затраты'] <= 0).any() or \
        (df['Переменные операционные затраты'] <= 0).any() or (df['Капитальные затраты'] < 0).any():
@@ -91,6 +96,17 @@ def render():
     if not np.allclose(calculated_cf, df['CF']):
         st.warning("Внимание: рассчитанный CF не соответствует значениям в столбце CF")
     
+    # Проверка корректности расчета NPV
+    calculated_npv = df['Дисконтированный CF'][:impact_duration].sum()
+    if not np.isclose(calculated_npv, npv):
+        st.warning(f"Внимание: Рассчитанный NPV ({calculated_npv:.2f}) не соответствует значению NPV ({npv:.2f})")
+    
+    # Добавление подробного вывода расчета NPV по годам
+    st.write("Расчет NPV по годам:")
+    for year in range(1, impact_duration + 1):
+        st.write(f"Год {year}: {df['Дисконтированный CF'].iloc[year-1]:.2f}")
+    st.write(f"Сумма (NPV): {df['Дисконтированный CF'][:impact_duration].sum():.2f}")
+    
     # Сохранение результатов расчетов
     st.session_state['calculation_results'] = {
         'df': df,
@@ -98,25 +114,6 @@ def render():
     }
     
     st.success("Расчеты выполнены успешно!")
-
-    # Добавление подробных формул и расчетов
-    st.subheader("Подробные формулы и расчеты")
-    st.write("""
-    **CFO (Cash Flow from Operations):**
-    CFO = Выручка - Фиксированные операционные затраты - Переменные операционные затраты
-    """)
-    st.write("""
-    **CFI (Cash Flow from Investments):**
-    CFI = -Капитальные затраты
-    """)
-    st.write("""
-    **CF (Cash Flow):**
-    CF = CFO + CFI
-    """)
-    st.write("""
-    **Дисконтированный CF:**
-    Дисконтированный CF = CF / (1 + Ставка дисконтирования) ^ Год
-    """)
 
 if __name__ == "__main__":
     render()

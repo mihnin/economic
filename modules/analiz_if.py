@@ -14,6 +14,7 @@ def render():
     results = st.session_state['calculation_results']
     df = results['df'].copy()
     original_npv = results['npv']
+    impact_duration = int(st.session_state['project_data']['impact_duration'])
 
     st.subheader("Изменение параметров")
 
@@ -38,7 +39,7 @@ def render():
     df['CFO'] = df['Выручка'] - df['Фиксированные операционные затраты'] - df['Переменные операционные затраты']
     df['CFI'] = -df['Капитальные затраты']
     df['CF'] = df['CFO'] + df['CFI']
-    new_npv = calculate_npv(df['CF'], new_rate)
+    new_npv = calculate_npv(df['CF'], new_rate, impact_duration)
 
     # Отображаем результаты
     st.subheader("Результаты анализа")
@@ -58,11 +59,11 @@ def render():
     tornado_data = []
     for param, change in params.items():
         if param != 'Ставка дисконтирования':
-            low_npv = calculate_npv(df['CF'] * (1 - abs(change) / 100), new_rate)
-            high_npv = calculate_npv(df['CF'] * (1 + abs(change) / 100), new_rate)
+            low_npv = calculate_npv(df['CF'] * (1 - abs(change) / 100), new_rate, impact_duration)
+            high_npv = calculate_npv(df['CF'] * (1 + abs(change) / 100), new_rate, impact_duration)
         else:
-            low_npv = calculate_npv(df['CF'], new_rate - abs(change) / 100)
-            high_npv = calculate_npv(df['CF'], new_rate + abs(change) / 100)
+            low_npv = calculate_npv(df['CF'], new_rate - abs(change) / 100, impact_duration)
+            high_npv = calculate_npv(df['CF'], new_rate + abs(change) / 100, impact_duration)
         tornado_data.append((param, low_npv - original_npv, high_npv - original_npv))
 
     tornado_data.sort(key=lambda x: abs(x[2] - x[1]), reverse=True)
