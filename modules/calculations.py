@@ -12,17 +12,18 @@ def calculate_npv(cash_flows, discount_rate):
     npv = sum(cf / (1 + discount_rate)**i for i, cf in enumerate(cash_flows))
     return npv
 
-def calculate_cf(revenue, total_opex, capex, working_capital):
+def calculate_cf(revenue, fixed_opex, variable_opex, capex, working_capital):
     """
     Расчет Совокупного Денежного Потока (CF).
     
     :param revenue: выручка
-    :param total_opex: общие операционные затраты
+    :param fixed_opex: фиксированные операционные затраты
+    :param variable_opex: переменные операционные затраты
     :param capex: капитальные затраты
     :param working_capital: изменение чистого оборотного капитала
     :return: значение CF
     """
-    cf = revenue - total_opex - capex - working_capital
+    cf = revenue - fixed_opex - variable_opex - capex - working_capital
     return cf
 
 def create_fem(data, years):
@@ -37,12 +38,13 @@ def create_fem(data, years):
     
     # Заполнение данными
     fem['Выручка'] = [data['revenue']] * years
-    fem['Операционные затраты'] = [data['total_opex']] * years
+    fem['Фиксированные операционные затраты'] = [data['fixed_opex']] * years
+    fem['Переменные операционные затраты'] = [data['total_opex'] - data['fixed_opex']] * years
     fem['Капитальные затраты'] = [data['capex']] * years
     fem['Чистый оборотный капитал'] = [data['working_capital']] * years
     
     # Расчет денежных потоков
-    fem['CFO'] = fem['Выручка'] - fem['Операционные затраты']
+    fem['CFO'] = fem['Выручка'] - fem['Фиксированные операционные затраты'] - fem['Переменные операционные затраты']
     fem['CFI'] = -fem['Капитальные затраты'] - fem['Чистый оборотный капитал']
     fem['CF'] = fem['CFO'] + fem['CFI']
     

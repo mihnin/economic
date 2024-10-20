@@ -24,7 +24,12 @@ def main():
             'npv_result': "NPV проекта:",
             'input_warning': "Пожалуйста, введите данные на вкладке 'Ввод данных'",
             'employee_data': "Данные о сотрудниках:",
-            'total_opex': "Общие операционные затраты:"
+            'total_opex': "Общие операционные затраты:",
+            'what_if': "Анализ 'Что если'",
+            'update_params': "Обновить параметры",
+            'fem_explanation': "Пояснение к ФЭМ:",
+            'cash_flow_explanation': "Пояснение к графику денежных потоков:",
+            'npv_explanation': "Пояснение к графику NPV:"
         },
         'en': {
             'title': "Calculation of Economic Effect of Investment IT Projects",
@@ -40,7 +45,12 @@ def main():
             'npv_result': "Project NPV:",
             'input_warning': "Please enter data in the 'Data Input' tab",
             'employee_data': "Employee data:",
-            'total_opex': "Total operating expenses:"
+            'total_opex': "Total operating expenses:",
+            'what_if': "What-if Analysis",
+            'update_params': "Update parameters",
+            'fem_explanation': "FEM Explanation:",
+            'cash_flow_explanation': "Cash Flow Chart Explanation:",
+            'npv_explanation': "NPV Chart Explanation:"
         }
     }
 
@@ -87,15 +97,43 @@ def main():
             data = st.session_state.input_data
             years = int(data['calculation_period'])
             
-            fem = calculations.create_fem(data, years)
-            st.write(t['fem_title'])
-            st.write(fem)
+            # Анализ "Что если"
+            st.subheader(t['what_if'])
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                data['revenue'] = st.number_input("Выручка", value=float(data['revenue']), step=10000.0)
+            with col2:
+                data['fixed_opex'] = st.number_input("Фиксированные операционные затраты", value=float(data['fixed_opex']), step=10000.0)
+            with col3:
+                data['discount_rate'] = st.number_input("Ставка дисконтирования", value=float(data['discount_rate']), min_value=0.0, max_value=1.0, step=0.01)
+
+            if st.button(t['update_params']):
+                fem = calculations.create_fem(data, years)
+                st.session_state.fem = fem
+                st.session_state.npv = calculations.calculate_npv(fem['CF'], data['discount_rate'])
+
+            if 'fem' in st.session_state:
+                fem = st.session_state.fem
+                npv = st.session_state.npv
+            else:
+                fem = calculations.create_fem(data, years)
+                npv = calculations.calculate_npv(fem['CF'], data['discount_rate'])
+
+            st.subheader(t['fem_title'])
+            st.dataframe(fem)
+            st.write(t['fem_explanation'])
+            st.write("ФЭМ показывает финансовые потоки проекта по годам, включая выручку, затраты и денежные потоки.")
             
-            npv = calculations.calculate_npv(fem['CF'], data['discount_rate'])
             st.write(f"{t['npv_result']} {npv:.2f}")
             
+            st.subheader(t['cash_flow_explanation'])
+            st.write("График показывает динамику операционного (CFO), инвестиционного (CFI) и совокупного (CF) денежных потоков по годам.")
             visualization.plot_cash_flows(fem, current_lang)
+            
+            st.subheader(t['npv_explanation'])
+            st.write("График отображает накопленный NPV проекта по годам. Положительное значение NPV указывает на экономическую эффективность проекта.")
             visualization.plot_npv(fem, current_lang)
+
         else:
             st.warning(t['input_warning'])
 
