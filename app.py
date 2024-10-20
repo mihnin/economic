@@ -4,8 +4,8 @@ from modules import input_data, calculate, out_data, visual_out_data, analiz_if
 from utils import utils
 
 def main():
-    st.set_page_config(page_title="Экономический эффект проекта", layout="wide")
-    st.title("Расчет экономического эффекта проекта")
+    st.set_page_config(page_title="Расчет экономической эффективности инвестиционных IT-проектов и ЗНИ", layout="wide")
+    st.title("Расчет экономической эффективности инвестиционных IT-проектов и ЗНИ")
 
     # Создаем тестовый Excel файл, если его еще нет
     test_file = "test_project_data.xlsx"
