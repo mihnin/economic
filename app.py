@@ -30,6 +30,9 @@ def main():
                     bd.save_calculation(conn, project_id, st.session_state['calculation_results']['npv'], st.session_state['calculation_results']['df'])
                 st.sidebar.success("Проект успешно сохранен")
                 st.sidebar.info("Проект сохранен. Введите название проекта для сохранения.")
+                # Обновляем список проектов
+                projects = bd.load_projects(conn)
+                st.sidebar.selectbox("Выберите проект для загрузки", [project[1] for project in projects])
             else:
                 st.sidebar.warning("Пожалуйста, введите название проекта")
         else:
@@ -62,6 +65,9 @@ def main():
             project_id = next(project[0] for project in projects if project[1] == selected_project)
             bd.delete_project(conn, project_id)
             st.sidebar.success("Проект успешно удален")
+            # Обновляем список проектов
+            projects = bd.load_projects(conn)
+            st.sidebar.selectbox("Выберите проект для загрузки", [project[1] for project in projects])
         except StopIteration:
             st.sidebar.error("Выбранный проект не найден")
 

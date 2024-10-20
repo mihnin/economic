@@ -1,5 +1,8 @@
 import sqlite3
 import pandas as pd
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 def create_connection():
     conn = sqlite3.connect('project_data.db')
@@ -32,6 +35,8 @@ def create_tables(conn):
 
 def save_project(conn, name, project_data):
     cursor = conn.cursor()
+    logging.info(f"Saving project: {name}")
+    logging.info(f"Project data: {project_data}")
     cursor.execute('''
         INSERT INTO projects (name, project_duration, impact_duration, discount_rate, yearly_data, coefficients, var_costs)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -44,6 +49,9 @@ def save_project(conn, name, project_data):
 
 def save_calculation(conn, project_id, npv, df):
     cursor = conn.cursor()
+    logging.info(f"Saving calculation for project ID: {project_id}")
+    logging.info(f"NPV: {npv}")
+    logging.info(f"DF: {df}")
     cursor.execute('''
         INSERT INTO calculations (project_id, npv, df)
         VALUES (?, ?, ?)
