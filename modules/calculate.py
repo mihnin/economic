@@ -8,8 +8,11 @@ def calculate_cf(revenue, fixed_costs, var_costs):
 
 def calculate_npv(cash_flows, discount_rate, impact_duration):
     """Расчет NPV с учетом срока влияния"""
-    n = min(len(cash_flows), impact_duration)  # Используем минимальное из двух значений
-    return np.sum(cash_flows[:n] / (1 + discount_rate) ** np.arange(n))
+    n = min(len(cash_flows), impact_duration)
+    npv = 0
+    for i in range(n):
+        npv += cash_flows.iloc[i] / (1 + discount_rate) ** (i + 1)
+    return npv
 
 def render():
     st.header("Расчеты")
@@ -26,17 +29,17 @@ def render():
     
     # Преобразуем столбцы в числовой формат
     for col in ['Выручка', 'Фиксированные операционные затраты', 'Капитальные затраты']:
-        df[col] = pd.to_numeric(df[col], errors='coerce').astype(float)  # Преобразуем в float
+        df[col] = pd.to_numeric(df[col], errors='coerce').astype(float)
     
     # Расчет переменных операционных затрат
     var_costs = pd.DataFrame(data['var_costs'])
     if 'Количество лет' in var_costs.columns:
-        var_costs['Количество лет'] = pd.to_numeric(var_costs['Количество лет'], errors='coerce').astype(float)  # Преобразуем в float
+        var_costs['Количество лет'] = pd.to_numeric(var_costs['Количество лет'], errors='coerce').astype(float)
     else:
-        var_costs['Количество лет'] = pd.to_numeric(var_costs['Количество месяцев'], errors='coerce').astype(float)  # Преобразуем в float
-    var_costs['Количество'] = pd.to_numeric(var_costs['Количество'], errors='coerce').astype(float)  # Преобразуем в float
-    var_costs['Ставка'] = pd.to_numeric(var_costs['Ставка'], errors='coerce').astype(float)  # Преобразуем в float
-    var_costs['Процент индексирования'] = pd.to_numeric(var_costs['Процент индексирования'], errors='coerce').astype(float)  # Преобразуем в float
+        var_costs['Количество лет'] = pd.to_numeric(var_costs['Количество месяцев'], errors='coerce').astype(float)
+    var_costs['Количество'] = pd.to_numeric(var_costs['Количество'], errors='coerce').astype(float)
+    var_costs['Ставка'] = pd.to_numeric(var_costs['Ставка'], errors='coerce').astype(float)
+    var_costs['Процент индексирования'] = pd.to_numeric(var_costs['Процент индексирования'], errors='coerce').astype(float)
     
     coefficients = {k: float(v) for k, v in data['coefficients'].items()}
     
@@ -60,6 +63,7 @@ def render():
     # Расчет дисконтированного CF и NPV
     discount_rate = float(data['discount_rate'])
     impact_duration = int(data['impact_duration'])
+    df['Дисконтированный CF'] = df['CF'] / (1 + discount_rate) ** df['Год']
     npv = calculate_npv(df['CF'], discount_rate, impact_duration)
     
     st.subheader("Результаты расчетов")
@@ -80,9 +84,6 @@ def render():
     st.write(f"CF: {df['CF']}")
     st.write(f"Срок влияния: {impact_duration} лет")
     st.write(f"Ставка дисконтирования: {discount_rate:.2%}")
-    
-    # Расчет и вывод дисконтированного CF
-    df['Дисконтированный CF'] = df['CF'] / (1 + discount_rate) ** df['Год']
     st.write(f"Дисконтированный CF: {df['Дисконтированный CF']}")
     
     # Проверка на наличие отрицательных или нулевых значений
@@ -100,6 +101,20 @@ def render():
     calculated_npv = df['Дисконтированный CF'][:impact_duration].sum()
     if not np.isclose(calculated_npv, npv):
         st.warning(f"Внимание: Рассчитанный NPV ({calculated_npv:.2f}) не соответствует значению NPV ({npv:.2f})")
+    
+    # Дополнительная проверка расчета NPV
+    npv_3_years = df['Дисконтированный CF'][:impact_duration].sum()
+    npv_5_years = df['Дисконтированный CF'].sum()
+
+    st.write(f"NPV за {impact_duration} года (срок влияния): {npv_3_years:.2f}")
+    st.write(f"NPV за все 5 лет: {npv_5_years:.2f}")
+
+    if np.isclose(npv, npv_3_years):
+        st.success("NPV рассчитан корректно на основе срока влияния")
+    elif np.isclose(npv, npv_5_years):
+        st.warning("NPV рассчитан на основе всех 5 лет, а не срока влияния")
+    else:
+        st.error("NPV не соответствует ни расчету за срок влияния, ни расчету за все 5 лет")
     
     # Добавление подробного вывода расчета NPV по годам
     st.write("Расчет NPV по годам:")
