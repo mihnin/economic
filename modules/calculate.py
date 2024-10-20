@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from scipy import optimize
 
 def calculate_cf(revenue, fixed_costs, var_costs):
     """Расчет денежного потока"""
@@ -13,6 +14,18 @@ def calculate_npv(cash_flows, discount_rate, impact_duration):
     for i in range(n):
         npv += cash_flows.iloc[i] / (1 + discount_rate) ** (i + 1)
     return npv
+
+def calculate_irr(cash_flows):
+    """Расчет IRR"""
+    if len(cash_flows) < 2 or np.all(cash_flows == 0):
+        return None
+
+    def npv_func(rate, cash_flows):
+        return np.sum(cash_flows / (1 + rate) ** np.arange(len(cash_flows)))
+    try:
+        return optimize.brentq(lambda r: npv_func(r, cash_flows), -1.0, 1.0)
+    except ValueError:
+        return None
 
 def render():
     st.header("Расчеты")
@@ -71,6 +84,13 @@ def render():
     
     st.subheader("Итоговые показатели")
     st.write(f"**NPV:** {npv:.2f}")
+    
+    # Расчет IRR
+    irr = calculate_irr(df['CF'])
+    if irr is not None:
+        st.write(f"**IRR:** {irr:.2%}")
+    else:
+        st.error("Не удалось рассчитать IRR")
     
     # Проверка данных
     st.subheader("Проверка данных")
