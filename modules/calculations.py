@@ -39,7 +39,7 @@ def create_fem(data, years):
     # Заполнение данными
     fem['Выручка'] = [data['revenue']] * years
     fem['Фиксированные операционные затраты'] = [data['fixed_opex']] * years
-    fem['Переменные операционные затраты'] = [data['total_opex'] - data['fixed_opex']] * years
+    fem['Переменные операционные затраты'] = [data['variable_opex']] * years
     fem['Капитальные затраты'] = [data['capex']] * years
     fem['Чистый оборотный капитал'] = [data['working_capital']] * years
     

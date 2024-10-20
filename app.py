@@ -29,7 +29,8 @@ def main():
             'update_params': "Обновить параметры",
             'fem_explanation': "Пояснение к ФЭМ:",
             'cash_flow_explanation': "Пояснение к графику денежных потоков:",
-            'npv_explanation': "Пояснение к графику NPV:"
+            'npv_explanation': "Пояснение к графику NPV:",
+            'export_results': "Экспорт результатов в Excel"
         },
         'en': {
             'title': "Calculation of Economic Effect of Investment IT Projects",
@@ -50,7 +51,8 @@ def main():
             'update_params': "Update parameters",
             'fem_explanation': "FEM Explanation:",
             'cash_flow_explanation': "Cash Flow Chart Explanation:",
-            'npv_explanation': "NPV Chart Explanation:"
+            'npv_explanation': "NPV Chart Explanation:",
+            'export_results': "Export results to Excel"
         }
     }
 
@@ -81,6 +83,7 @@ def main():
         
         if input_data:
             st.session_state.input_data = input_data
+            st.session_state.input_data['variable_opex'] = input_data['total_opex'] - input_data['fixed_opex']
             st.success(t['data_saved'])
             
             # Отображение данных о сотрудниках
@@ -99,12 +102,18 @@ def main():
             
             # Анализ "Что если"
             st.subheader(t['what_if'])
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4, col5, col6 = st.columns(6)
             with col1:
                 data['revenue'] = st.number_input("Выручка", value=float(data['revenue']), step=10000.0)
             with col2:
                 data['fixed_opex'] = st.number_input("Фиксированные операционные затраты", value=float(data['fixed_opex']), step=10000.0)
             with col3:
+                data['variable_opex'] = st.number_input("Переменные операционные затраты", value=float(data['variable_opex']), step=10000.0)
+            with col4:
+                data['capex'] = st.number_input("Капитальные затраты", value=float(data['capex']), step=10000.0)
+            with col5:
+                data['working_capital'] = st.number_input("Чистый оборотный капитал", value=float(data['working_capital']), step=10000.0)
+            with col6:
                 data['discount_rate'] = st.number_input("Ставка дисконтирования", value=float(data['discount_rate']), min_value=0.0, max_value=1.0, step=0.01)
 
             if st.button(t['update_params']):
@@ -133,6 +142,14 @@ def main():
             st.subheader(t['npv_explanation'])
             st.write("График отображает накопленный NPV проекта по годам. Положительное значение NPV указывает на экономическую эффективность проекта.")
             visualization.plot_npv(fem, current_lang)
+
+            # Экспорт результатов в Excel
+            st.subheader(t['export_results'])
+            if st.button(t['export_results']):
+                with pd.ExcelWriter('results.xlsx', engine='openpyxl') as writer:
+                    fem.to_excel(writer, sheet_name='FEM')
+                    st.session_state.employee_data.to_excel(writer, sheet_name='Employee Data')
+                    st.write("Результаты успешно экспортированы в файл results.xlsx")
 
         else:
             st.warning(t['input_warning'])
