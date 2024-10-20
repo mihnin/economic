@@ -15,7 +15,9 @@ def generate_test_data(project_duration):
     var_costs = pd.DataFrame({
         'Коэффициент': ['K1', 'K2', 'K3', 'K4', 'K5', 'K1', 'K2'],
         'Количество': np.random.randint(1, 10, 7),
-        'Ставка': np.random.randint(50000, 200000, 7)
+        'Ставка': np.random.randint(50000, 200000, 7),
+        'Количество лет': np.random.randint(1, 5, 7),
+        'Процент индексирования': np.random.uniform(0.01, 0.1, 7)
     }, index=specialists)
     
     return yearly_data, var_costs
@@ -28,7 +30,10 @@ def render():
     with col1:
         project_duration = st.slider("Срок проекта (лет)", 1, 15, 5)
     with col2:
-        impact_duration = st.slider("Срок влияния (лет)", 1, 5, 3)
+        if project_duration == 1:
+            impact_duration = st.slider("Срок влияния (месяцев)", 1, 12, 3)
+        else:
+            impact_duration = st.slider("Срок влияния (лет)", 1, 5, 3)
     with col3:
         discount_rate = st.number_input("Ставка дисконтирования", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
 
@@ -58,6 +63,9 @@ def render():
 
     # Отображение и редактирование переменных операционных затрат
     st.subheader("Переменные операционные затраты")
+    if project_duration == 1:
+        var_costs.rename(columns={'Количество лет': 'Количество месяцев'}, inplace=True)
+        var_costs['Количество месяцев'] = np.random.randint(1, 13, 7)
     edited_var_costs_df = st.data_editor(var_costs, num_rows="dynamic")
 
     # Сохранение введенных данных в session_state

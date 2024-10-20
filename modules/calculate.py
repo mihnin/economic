@@ -31,10 +31,20 @@ def render():
     var_costs = pd.DataFrame(data['var_costs'])
     var_costs['Количество'] = pd.to_numeric(var_costs['Количество'], errors='coerce')
     var_costs['Ставка'] = pd.to_numeric(var_costs['Ставка'], errors='coerce')
+    var_costs['Количество лет'] = pd.to_numeric(var_costs['Количество лет'], errors='coerce')
+    var_costs['Процент индексирования'] = pd.to_numeric(var_costs['Процент индексирования'], errors='coerce')
     
     coefficients = {k: float(v) for k, v in data['coefficients'].items()}
-    total_var_costs = (var_costs['Количество'] * var_costs['Ставка'] * 
-                       var_costs['Коэффициент'].map(coefficients)).sum()
+    
+    total_var_costs = []
+    for year in range(1, len(df) + 1):
+        year_var_costs = 0
+        for _, row in var_costs.iterrows():
+            if year <= row['Количество лет']:
+                year_var_costs += row['Количество'] * row['Ставка'] * coefficients[row['Коэффициент']]
+            else:
+                year_var_costs += row['Количество'] * row['Ставка'] * coefficients[row['Коэффициент']] * (1 + row['Процент индексирования']) ** (year - 1)
+        total_var_costs.append(year_var_costs)
     
     df['Переменные операционные затраты'] = total_var_costs
     
