@@ -29,6 +29,7 @@ def main():
                 if 'calculation_results' in st.session_state:
                     bd.save_calculation(conn, project_id, st.session_state['calculation_results']['npv'], st.session_state['calculation_results']['df'])
                 st.sidebar.success("Проект успешно сохранен")
+                st.sidebar.info("Проект сохранен. Введите название проекта для сохранения.")
             else:
                 st.sidebar.warning("Пожалуйста, введите название проекта")
         else:

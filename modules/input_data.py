@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from utils import utils
 
 def generate_test_data(project_duration):
     # Генерация тестовых данных по годам
@@ -22,8 +23,18 @@ def generate_test_data(project_duration):
     
     return yearly_data, var_costs
 
+def load_data_from_excel():
+    uploaded_file = st.file_uploader("Загрузить данные из Excel", type=["xlsx"])
+    if uploaded_file is not None:
+        project_data = utils.load_from_excel(uploaded_file)
+        st.session_state['project_data'] = project_data
+        st.success("Данные успешно загружены из Excel!")
+
 def render():
     st.header("Ввод данных")
+
+    # Добавляем кнопку загрузки данных из Excel
+    load_data_from_excel()
 
     # Ввод основных параметров проекта
     col1, col2, col3 = st.columns(3)
