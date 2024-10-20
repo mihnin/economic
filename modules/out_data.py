@@ -44,10 +44,15 @@ def render():
     st.subheader("Дополнительные показатели эффективности")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Срок окупаемости (лет)", f"{payback_period:.2f}")
+        if payback_period == float('inf'):
+            st.metric("Срок окупаемости (лет)", "-")
+        else:
+            st.metric("Срок окупаемости (лет)", f"{payback_period:.2f}")
     with col2:
         if irr is not None:
             st.metric("IRR", f"{irr:.2%}")
+        elif np.all(df['CF'] < 0):
+            st.error("Для проектов или ЗНИ с исключительно отрицательными денежными потоками IRR не существует в реальном числовом пространстве.")
         else:
             st.error("Не удалось рассчитать IRR")
     with col3:
