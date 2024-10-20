@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import numpy_financial as npf
 
 def calculate_npv(cash_flows, discount_rate):
     """
@@ -63,7 +64,7 @@ def calculate_irr(cash_flows):
     :param cash_flows: список денежных потоков
     :return: значение IRR
     """
-    return np.irr(cash_flows)
+    return npf.irr(cash_flows)
 
 def calculate_payback_period(cash_flows):
     """

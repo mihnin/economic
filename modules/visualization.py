@@ -2,6 +2,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import plotly.express as px
 
 def plot_cash_flows(fem, lang='ru'):
     """
@@ -31,18 +32,11 @@ def plot_cash_flows(fem, lang='ru'):
         }
     }
     
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(fem.index, fem['CFO'], label=labels[lang]['cfo'], marker='o')
-    ax.plot(fem.index, fem['CFI'], label=labels[lang]['cfi'], marker='s')
-    ax.plot(fem.index, fem['CF'], label=labels[lang]['cf'], marker='^')
-    
-    ax.set_xlabel(labels[lang]['year'])
-    ax.set_ylabel(labels[lang]['cash_flow'])
-    ax.legend()
-    ax.grid(True)
-    
-    plt.title(titles[lang])
-    st.pyplot(fig)
+    fig = px.line(fem, x=fem.index, y=['CFO', 'CFI', 'CF'], 
+                  labels={'index': labels[lang]['year'], 'value': labels[lang]['cash_flow'], 'variable': 'Type'},
+                  title=titles[lang])
+    fig.update_layout(legend_title_text=None)
+    st.plotly_chart(fig)
 
 def plot_npv(fem, lang='ru'):
     """
@@ -60,19 +54,11 @@ def plot_npv(fem, lang='ru'):
         'en': {'year': 'Year', 'npv': 'NPV'}
     }
     
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(fem.index, fem['NPV'], marker='o')
-    ax.fill_between(fem.index, 0, fem['NPV'], alpha=0.2)
-    
-    ax.set_xlabel(labels[lang]['year'])
-    ax.set_ylabel(labels[lang]['npv'])
-    ax.grid(True)
-    
-    # Добавление горизонтальной линии на уровне NPV = 0
-    ax.axhline(y=0, color='r', linestyle='--')
-    
-    plt.title(titles[lang])
-    st.pyplot(fig)
+    fig = px.line(fem, x=fem.index, y='NPV', 
+                  labels={'index': labels[lang]['year'], 'NPV': labels[lang]['npv']},
+                  title=titles[lang])
+    fig.update_layout(showlegend=False)
+    st.plotly_chart(fig)
 
 def plot_sensitivity_analysis(sensitivity_data, lang='ru'):
     """
@@ -96,15 +82,10 @@ def plot_sensitivity_analysis(sensitivity_data, lang='ru'):
         }
     }
     
-    fig, ax = plt.subplots(figsize=(12, 8))
-    sns.heatmap(sensitivity_data, annot=True, cmap='coolwarm', ax=ax)
-    
-    ax.set_xlabel(labels[lang]['change'])
-    ax.set_ylabel(labels[lang]['parameter'])
-    
-    plt.title(titles[lang])
-    st.pyplot(fig)
+    fig = px.imshow(sensitivity_data, 
+                    labels=dict(x=labels[lang]['change'], y=labels[lang]['parameter'], color="NPV Change"),
+                    title=titles[lang])
+    st.plotly_chart(fig)
 
-# TODO: Добавить интерактивные графики с использованием Plotly
 # TODO: Реализовать выбор типа графика пользователем
 # TODO: Добавить возможность экспорта графиков
