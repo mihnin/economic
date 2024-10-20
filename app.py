@@ -22,8 +22,6 @@ def main():
             'data_saved': "Данные успешно сохранены!",
             'fem_title': "Финансово-экономическая модель:",
             'npv_result': "NPV проекта:",
-            'irr_result': "IRR проекта:",
-            'irr_error': "Невозможно рассчитать IRR",
             'input_warning': "Пожалуйста, введите данные на вкладке 'Ввод данных'",
             'employee_data': "Данные о сотрудниках:",
             'total_opex': "Общие операционные затраты:",
@@ -33,9 +31,6 @@ def main():
             'cash_flow_explanation': "Пояснение к графику денежных потоков:",
             'npv_explanation': "Пояснение к графику NPV:",
             'export_results': "Экспорт результатов в Excel",
-            'sensitivity_analysis': "Анализ чувствительности",
-            'sensitivity_params': "Параметры для анализа чувствительности",
-            'sensitivity_results': "Результаты анализа чувствительности",
             'revenue': "Выручка",
             'fixed_opex': "Фиксированные операционные затраты",
             'variable_opex': "Переменные операционные затраты",
@@ -55,8 +50,6 @@ def main():
             'data_saved': "Data successfully saved!",
             'fem_title': "Financial and Economic Model:",
             'npv_result': "Project NPV:",
-            'irr_result': "Project IRR:",
-            'irr_error': "Unable to calculate IRR",
             'input_warning': "Please enter data in the 'Data Input' tab",
             'employee_data': "Employee data:",
             'total_opex': "Total operating expenses:",
@@ -66,9 +59,6 @@ def main():
             'cash_flow_explanation': "Cash Flow Chart Explanation:",
             'npv_explanation': "NPV Chart Explanation:",
             'export_results': "Export results to Excel",
-            'sensitivity_analysis': "Sensitivity Analysis",
-            'sensitivity_params': "Parameters for sensitivity analysis",
-            'sensitivity_results': "Sensitivity analysis results",
             'revenue': "Revenue",
             'fixed_opex': "Fixed operating expenses",
             'variable_opex': "Variable operating expenses",
@@ -142,16 +132,13 @@ def main():
                 fem = calculations.create_fem(data, years)
                 st.session_state.fem = fem
                 st.session_state.npv = calculations.calculate_npv(fem['CF'], data['discount_rate'])
-                st.session_state.irr = calculations.calculate_irr(fem['CF'])
 
             if 'fem' in st.session_state:
                 fem = st.session_state.fem
                 npv = st.session_state.npv
-                irr = st.session_state.irr
             else:
                 fem = calculations.create_fem(data, years)
                 npv = calculations.calculate_npv(fem['CF'], data['discount_rate'])
-                irr = calculations.calculate_irr(fem['CF'])
 
             st.subheader(t['fem_title'])
             st.dataframe(fem)
@@ -159,10 +146,6 @@ def main():
             st.write("ФЭМ показывает финансовые потоки проекта по годам, включая выручку, затраты и денежные потоки.")
             
             st.write(f"{t['npv_result']} {npv:.2f}")
-            if np.isnan(irr):
-                st.write(t['irr_error'])
-            else:
-                st.write(f"{t['irr_result']} {irr:.2%}")
             
             st.subheader(t['cash_flow_explanation'])
             st.write("График показывает динамику операционного (CFO), инвестиционного (CFI) и совокупного (CF) денежных потоков по годам.")
@@ -179,30 +162,6 @@ def main():
                     fem.to_excel(writer, sheet_name='FEM')
                     st.session_state.employee_data.to_excel(writer, sheet_name='Employee Data')
                     st.write("Результаты успешно экспортированы в файл results.xlsx")
-
-            # Анализ чувствительности
-            st.subheader(t['sensitivity_analysis'])
-            st.write(t['sensitivity_params'])
-            sensitivity_params = {
-                'revenue': st.slider(t['revenue'], min_value=float(data['revenue']) * 0.5, max_value=float(data['revenue']) * 1.5, value=float(data['revenue']), step=10000.0),
-                'fixed_opex': st.slider(t['fixed_opex'], min_value=float(data['fixed_opex']) * 0.5, max_value=float(data['fixed_opex']) * 1.5, value=float(data['fixed_opex']), step=10000.0),
-                'variable_opex': st.slider(t['variable_opex'], min_value=float(data['variable_opex']) * 0.5, max_value=float(data['variable_opex']) * 1.5, value=float(data['variable_opex']), step=10000.0),
-                'capex': st.slider(t['capex'], min_value=float(data['capex']) * 0.5, max_value=float(data['capex']) * 1.5, value=float(data['capex']), step=10000.0),
-                'working_capital': st.slider(t['working_capital'], min_value=float(data['working_capital']) * 0.5, max_value=float(data['working_capital']) * 1.5, value=float(data['working_capital']), step=10000.0),
-                'discount_rate': st.slider(t['discount_rate'], min_value=float(data['discount_rate']) * 0.5, max_value=float(data['discount_rate']) * 1.5, value=float(data['discount_rate']), step=0.01)
-            }
-
-            st.write(t['sensitivity_results'])
-            sensitivity_results = {}
-            for param, value in sensitivity_params.items():
-                data_copy = data.copy()
-                data_copy[param] = value
-                fem_sensitivity = calculations.create_fem(data_copy, years)
-                irr_sensitivity = calculations.calculate_irr(fem_sensitivity['CF'])
-                sensitivity_results[t[param]] = irr_sensitivity
-
-            sensitivity_df = pd.DataFrame(sensitivity_results.items(), columns=['Параметр', 'IRR'])
-            st.dataframe(sensitivity_df)
 
         else:
             st.warning(t['input_warning'])
